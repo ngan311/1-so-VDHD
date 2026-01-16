@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/layout :: layout">
+<div th:fragment="content">
+
+    <h3>📊 Tổng quan hệ thống</h3>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <h5>Tổng người chơi</h5>
+                    <h3 th:text="${stats.totalPlayers}">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <h5>Game đang hoạt động</h5>
+                    <h3 th:text="${stats.onlineGames}">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5>Tổng trận đấu</h5>
+                    <h3 th:text="${stats.totalMatches}">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-bg-danger">
+                <div class="card-body">
+                    <h5>Phòng đang mở</h5>
+                    <h3 th:text="${stats.totalRooms}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</html>

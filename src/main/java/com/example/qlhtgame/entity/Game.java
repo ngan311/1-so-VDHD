@@ -13,6 +13,9 @@ public class Game {
     private String category; // MOBA, FPS, Puzzle
     private boolean online;
 
+    private boolean active;     // hide/unhide
+    private String version;     // 1.0, 1.1...
+
     // ===== getter & setter =====
 
     public Long getId() {
@@ -31,6 +34,14 @@ public class Game {
         return online;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -45,5 +56,13 @@ public class Game {
 
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

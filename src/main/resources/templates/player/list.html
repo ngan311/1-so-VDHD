@@ -1,0 +1,25 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h2>Danh sách người chơi</h2>
+
+    <table>
+        <tr>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+        <tr th:each="p : ${players}">
+            <td th:text="${p.username}"></td>
+            <td th:text="${p.email}"></td>
+            <td th:text="${p.active ? 'Hoạt động' : 'Bị khóa'}"></td>
+            <td>
+                <a th:href="@{/players/{id}(id=${p.id})}">Xem</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div th:replace="layout/footer"></div>

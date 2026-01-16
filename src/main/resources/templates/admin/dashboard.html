@@ -1,0 +1,32 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h1>Dashboard Quản trị</h1>
+
+    <div class="stats">
+        <div class="card">👤 Người dùng: <b th:text="${users}"></b></div>
+        <div class="card">🎮 Game: <b th:text="${games}"></b></div>
+        <div class="card">🏠 Phòng chơi: <b th:text="${rooms}"></b></div>
+    </div>
+
+    <div class="card">
+        <canvas id="systemChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('systemChart');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Người chơi','Game','Phòng'],
+            datasets: [{
+                data: [120,6,18]
+            }]
+        }
+    });
+</script>
+
+<div th:replace="layout/footer"></div>

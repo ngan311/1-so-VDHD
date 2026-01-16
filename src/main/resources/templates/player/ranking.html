@@ -1,0 +1,26 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h2>🏆 Bảng xếp hạng người chơi</h2>
+
+    <table>
+        <tr>
+            <th>Hạng</th>
+            <th>Người chơi</th>
+            <th>Điểm</th>
+            <th>Số trận thắng</th>
+            <th>Cấp độ</th>
+        </tr>
+
+        <tr th:each="p, stat : ${rankings}">
+            <td th:text="${stat.index + 1}"></td>
+            <td th:text="${p.username}"></td>
+            <td th:text="${p.point}"></td>
+            <td th:text="${p.winCount}"></td>
+            <td th:text="${p.level}"></td>
+        </tr>
+    </table>
+</div>
+
+<div th:replace="layout/footer"></div>

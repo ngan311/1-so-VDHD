@@ -1,0 +1,24 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h2>Danh sách game</h2>
+    <a href="/games/create">➕ Thêm game</a>
+
+    <table>
+        <tr>
+            <th>Tên game</th>
+            <th>Thể loại</th>
+            <th>Phiên bản</th>
+            <th>Trạng thái</th>
+        </tr>
+        <tr th:each="g : ${games}">
+            <td th:text="${g.name}"></td>
+            <td th:text="${g.category}"></td>
+            <td th:text="${g.version}"></td>
+            <td th:text="${g.status}"></td>
+        </tr>
+    </table>
+</div>
+
+<div th:replace="layout/footer"></div>

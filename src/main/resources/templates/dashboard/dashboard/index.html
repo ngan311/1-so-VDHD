@@ -1,0 +1,12 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h1>Bảng điều khiển</h1>
+
+    <div class="card">👤 Tổng người chơi: <b th:text="${players}"></b></div>
+    <div class="card">🎮 Tổng game: <b th:text="${games}"></b></div>
+    <div class="card">⚔️ Tổng trận đấu: <b th:text="${matches}"></b></div>
+</div>
+
+<div th:replace="layout/footer"></div>

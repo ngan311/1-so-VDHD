@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Player Detail</title>
+</head>
+<body>
+
+<h2>Player Detail</h2>
+
+<p><b>Name:</b> <span th:text="${player.name}"></span></p>
+<p><b>Score:</b> <span th:text="${player.score}"></span></p>
+<p><b>Win:</b> <span th:text="${player.winCount}"></span></p>
+<p><b>Total Match:</b> <span th:text="${player.totalMatch}"></span></p>
+<p><b>Active:</b> <span th:text="${player.active}"></span></p>
+
+<h3>Match History</h3>
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>ID</th>
+        <th>Game</th>
+        <th>Result</th>
+        <th>Kills</th>
+        <th>Assists</th>
+        <th>Score</th>
+    </tr>
+
+    <tr th:each="m : ${matches}">
+        <td th:text="${m.id}"></td>
+        <td th:text="${m.game != null ? m.game.name : ''}"></td>
+        <td th:text="${m.result}"></td>
+        <td th:text="${m.kills}"></td>
+        <td th:text="${m.assists}"></td>
+        <td th:text="${m.scoreEarned}"></td>
+    </tr>
+</table>
+
+<a th:href="@{/players}">⬅ Back</a>
+
+</body>
+</html>

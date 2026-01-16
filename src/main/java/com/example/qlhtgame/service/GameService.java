@@ -19,7 +19,15 @@ public class GameService {
         return repo.findAll();
     }
 
+    public Game getById(Long id) {
+        return repo.findById(id).orElseThrow();
+    }
+
     public Game create(Game g) {
+        if (g.getVersion() == null || g.getVersion().trim().isEmpty()) {
+            g.setVersion("1.0");
+        }
+        g.setActive(true);
         return repo.save(g);
     }
 
@@ -28,10 +36,23 @@ public class GameService {
         g.setName(data.getName());
         g.setCategory(data.getCategory());
         g.setOnline(data.isOnline());
+        g.setVersion(data.getVersion());
         return repo.save(g);
     }
 
     public void delete(Long id) {
         repo.deleteById(id);
+    }
+
+    public void hide(Long id) {
+        Game g = repo.findById(id).orElseThrow();
+        g.setActive(false);
+        repo.save(g);
+    }
+
+    public void unhide(Long id) {
+        Game g = repo.findById(id).orElseThrow();
+        g.setActive(true);
+        repo.save(g);
     }
 }

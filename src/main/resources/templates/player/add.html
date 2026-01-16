@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Player</title>
+</head>
+<body>
+<h2>Thêm Player</h2>
+
+<form th:action="@{/players/add}" th:object="${player}" method="post">
+    Tên: <input type="text" th:field="*{name}" />
+    <br>
+    <button type="submit">Lưu</button>
+</form>
+
+</body>
+</html>

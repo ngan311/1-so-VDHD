@@ -1,0 +1,92 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
+
+.topbar {
+    background: #1f2937;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.sidebar {
+    width: 220px;
+    background: #111827;
+    color: white;
+    position: fixed;
+    top: 50px;
+    bottom: 0;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li a {
+    display: block;
+    padding: 12px 20px;
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar li a:hover {
+    background: #374151;
+}
+
+.content {
+    margin-left: 220px;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #f3f4f6;
+}
+.auth-page {
+    background: linear-gradient(135deg,#1e3a8a,#111827);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-box {
+    background: white;
+    padding: 30px;
+    width: 360px;
+    border-radius: 8px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+.auth-box button {
+    width: 100%;
+    padding: 10px;
+    background: #2563eb;
+    color: white;
+    border: none;
+}

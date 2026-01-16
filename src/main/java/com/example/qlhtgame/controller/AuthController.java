@@ -1,45 +1,77 @@
 package com.example.qlhtgame.controller;
 
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.qlhtgame.entity.User;
-import com.example.qlhtgame.repository.UserRepository;
 import com.example.qlhtgame.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.qlhtgame.service.PasswordService;
+import com.example.qlhtgame.repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepo;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AuthController(UserRepository userRepo,
+                          JwtUtil jwtUtil,
+                          PasswordEncoder passwordEncoder,
+                          PasswordService passwordService) {
+        this.userRepo = userRepo;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
+    }
 
     @PostMapping("/register")
     public User register(@RequestBody User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
-        return userRepository.save(user);
+        return userRepo.save(user);
     }
 
     @PostMapping("/login")
     public String login(@RequestBody User user) {
-        User dbUser = userRepository.findByUsername(user.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        User dbUser = userRepo.findByUsername(user.getUsername()).orElseThrow();
 
         if (passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
             return jwtUtil.generateToken(dbUser.getUsername(), dbUser.getRole());
         }
         throw new RuntimeException("Login failed");
+    }
+
+    // ===== ĐỔI MẬT KHẨU =====
+    @PostMapping("/change-password")
+    public void changePassword(Authentication auth,
+                               @RequestParam String oldPassword,
+                               @RequestParam String newPassword,
+                               @RequestParam String confirmPassword) {
+
+        passwordService.changePassword(
+                auth.getName(),
+                oldPassword,
+                newPassword,
+                confirmPassword
+        );
+    }
+
+    // ===== QUÊN MẬT KHẨU =====
+    @PostMapping("/forgot-password")
+    public String forgotPassword(@RequestParam String username) {
+        return passwordService.forgotPassword(username);
+    }
+
+    // ===== RESET MẬT KHẨU =====
+    @PostMapping("/reset-password")
+    public void resetPassword(@RequestParam String token,
+                              @RequestParam String newPassword,
+                              @RequestParam String confirmPassword) {
+
+        passwordService.resetPassword(token, newPassword, confirmPassword);
     }
 }

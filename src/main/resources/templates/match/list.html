@@ -1,0 +1,25 @@
+<div th:replace="layout/header"></div>
+<div th:replace="layout/sidebar"></div>
+
+<div class="content">
+    <h2>Lịch sử trận đấu</h2>
+
+    <table>
+        <tr>
+            <th>Game</th>
+            <th>Người thắng</th>
+            <th>MVP</th>
+            <th>Kết quả</th>
+            <th>Ngày</th>
+        </tr>
+        <tr th:each="m : ${matches}">
+            <td th:text="${m.game.name}"></td>
+            <td th:text="${m.winner.username}"></td>
+            <td th:text="${m.mvp.username}"></td>
+            <td th:text="${m.result}"></td>
+            <td th:text="${#dates.format(m.createdAt,'dd/MM/yyyy')}"></td>
+        </tr>
+    </table>
+</div>
+
+<div th:replace="layout/footer"></div>

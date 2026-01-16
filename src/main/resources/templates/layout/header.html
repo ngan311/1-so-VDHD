@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title} ?: 'Hệ thống quản lý giải đấu game'"></title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <div class="logo">🎮 QL Giải Đấu Game</div>
+    <div class="user">
+        <span th:text="${#authentication.name}">admin</span>
+        <a href="/logout">Đăng xuất</a>
+    </div>
+</header>
