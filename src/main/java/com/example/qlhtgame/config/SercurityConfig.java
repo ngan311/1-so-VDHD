@@ -51,7 +51,7 @@ public class SercurityConfig {
                         ).permitAll()
 
 
-                        // ===== API auth =====
+
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
@@ -60,19 +60,19 @@ public class SercurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/auth/change-password").authenticated()
 
-                        // ===== API admin only =====
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Quản lý game/phòng/trận đấu: chỉ ADMIN được tạo/sửa/xoá/nhập kết quả
+
                         .requestMatchers(HttpMethod.POST, "/api/games/**", "/api/rooms/**", "/api/matches/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/games/**", "/api/rooms/**", "/api/matches/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/games/**", "/api/rooms/**").hasRole("ADMIN")
 
-                        // Quản lý người chơi: lock/unlock + tạo mới chỉ ADMIN
+
                         .requestMatchers(HttpMethod.POST, "/api/players/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/players/*/lock", "/api/players/*/unlock").hasRole("ADMIN")
 
-                        // ===== API đọc dữ liệu: USER/ADMIN được xem =====
+                        
                         .requestMatchers(HttpMethod.GET,
                                 "/api/games/**",
                                 "/api/rooms/**",
