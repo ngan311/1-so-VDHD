@@ -1,4 +1,4 @@
-/* ====== ENHANCED GAMING UI STYLESHEET ====== */
+
 
 :root {
   --primary-color: #3b82f6;
@@ -27,7 +27,7 @@ body {
   color: #1e293b;
 }
 
-/* ====== NAVBAR ====== */
+
 .navbar-dark {
   background: var(--darker-bg) !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -64,7 +64,7 @@ body {
   color: #3b82f6 !important;
 }
 
-/* ====== CARDS ====== */
+
 .card-kpi {
   border: 0;
   border-radius: 16px;
@@ -99,7 +99,7 @@ body {
   color: white;
 }
 
-/* ====== KPI STATS ====== */
+
 .kpi-card {
   position: relative;
   overflow: hidden;
@@ -141,7 +141,7 @@ body {
   font-weight: 500;
 }
 
-/* ====== TABLES ====== */
+
 .table {
   margin-bottom: 0;
 }
@@ -177,7 +177,7 @@ body {
   padding: 0.625rem 1rem;
 }
 
-/* ====== BUTTONS ====== */
+
 .btn {
   border-radius: 10px;
   font-weight: 600;
@@ -234,7 +234,7 @@ body {
   font-size: 0.875rem;
 }
 
-/* ====== BADGES ====== */
+
 .badge {
   padding: 0.375rem 0.75rem;
   border-radius: 8px;
@@ -264,7 +264,7 @@ body {
   background: #64748b !important;
 }
 
-/* ====== FORMS ====== */
+
 .form-control, .form-select {
   border-radius: 10px;
   border: 2px solid #e2e8f0;
@@ -302,7 +302,7 @@ body {
   border-radius: 2rem;
 }
 
-/* ====== MODAL ====== */
+
 .modal-content {
   border-radius: 16px;
   border: none;
@@ -341,7 +341,7 @@ body {
   opacity: 1;
 }
 
-/* ====== UTILITY CLASSES ====== */
+
 .clickable {
   cursor: pointer;
   transition: all 0.2s ease;
@@ -368,7 +368,7 @@ body {
   font-weight: 600 !important;
 }
 
-/* ====== DASHBOARD SPECIFIC ====== */
+
 .dashboard-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -383,7 +383,7 @@ body {
   font-weight: 700;
 }
 
-/* ====== GAME CARDS ====== */
+
 .game-card {
   position: relative;
   overflow: hidden;
@@ -412,7 +412,7 @@ body {
   color: white;
 }
 
-/* ====== PLAYER AVATAR ====== */
+
 .player-avatar {
   width: 40px;
   height: 40px;
@@ -427,7 +427,7 @@ body {
   border-radius: 16px;
 }
 
-/* ====== RANK INDICATOR ====== */
+
 .rank-badge {
   display: inline-flex;
   align-items: center;
@@ -454,7 +454,7 @@ body {
   color: white;
 }
 
-/* ====== STATS WIDGET ====== */
+
 .stat-widget {
   display: flex;
   align-items: center;
@@ -485,7 +485,7 @@ body {
   color: #1e293b;
 }
 
-/* ====== RESPONSIVE ====== */
+
 @media (max-width: 768px) {
   .kpi-value {
     font-size: 1.5rem;
@@ -505,7 +505,7 @@ body {
   }
 }
 
-/* ====== ANIMATIONS ====== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -534,7 +534,7 @@ body {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ====== TOAST NOTIFICATIONS ====== */
+
 .alert {
   border-radius: 12px;
   border: none;
@@ -558,7 +558,7 @@ body {
   color: white;
 }
 
-/* ====== LOADING STATES ====== */
+
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -579,7 +579,7 @@ body {
   }
 }
 
-/* ====== SCROLLBAR ====== */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

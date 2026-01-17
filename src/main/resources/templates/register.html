@@ -3,7 +3,7 @@
 <section>
     <div class="auth-container">
         <div class="row g-0 min-vh-100">
-            <!-- Left Side - Branding -->
+
             <div class="col-lg-6 d-none d-lg-flex auth-brand-side">
                 <div class="auth-brand-content">
                     <div class="brand-logo mb-4">
@@ -32,11 +32,11 @@
                 </div>
             </div>
 
-            <!-- Right Side - Register Form -->
+
             <div class="col-lg-6 d-flex align-items-center justify-content-center">
                 <div class="auth-form-container">
                     <div class="auth-form-wrapper">
-                        <!-- Mobile Logo -->
+
                         <div class="d-lg-none text-center mb-4">
                             <div class="mobile-logo">🎮</div>
                             <h3 class="fw-bold">GameHub</h3>
@@ -151,7 +151,7 @@
     </div>
 
     <style>
-        /* Reuse styles from login page */
+
         section {
             margin: 0 !important;
             padding: 0 !important;
@@ -236,7 +236,7 @@
             margin-bottom: 3rem;
         }
 
-        /* Stats Grid - Unique to Register */
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -567,7 +567,7 @@
                 const confirmPassword = document.getElementById('regPasswordConfirm').value;
                 const email = document.getElementById('regEmail').value.trim();
 
-                // Validations
+
                 if (!username || !password || !confirmPassword) {
                     toast('Vui lòng nhập đầy đủ thông tin bắt buộc', 'warning');
                     return;
@@ -613,7 +613,7 @@
             }
         }
 
-        // Add event listener for password strength
+
         document.addEventListener('DOMContentLoaded', () => {
             const passwordInput = document.getElementById('regPassword');
             if (passwordInput) {
@@ -622,7 +622,7 @@
                 });
             }
 
-            // Auto-fill username from URL if coming from login page
+
             const params = new URLSearchParams(window.location.search);
             const username = params.get('username');
             if (username) {

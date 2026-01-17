@@ -1,4 +1,4 @@
-// ====== Helper chung cho các màn hình MVC (Thymeleaf) ======
+
 
 const API_BASE = '';
 
