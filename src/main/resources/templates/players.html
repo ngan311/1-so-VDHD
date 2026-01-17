@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Quản lý người chơi</h4>
+
+        </div>
+        <button class="btn btn-primary" onclick="openCreate()">+ Thêm người chơi</button>
+    </div>
+
+    <div class="card card-kpi p-3">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên</th>
+                    <th>Score</th>
+                    <th>Thắng</th>
+                    <th>Tổng trận</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="tblPlayers"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+    <div class="modal fade" id="modalPlayer" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPlayerTitle">Người chơi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="playerId"/>
+                    <div class="mb-2">
+                        <label class="form-label">Tên người chơi</label>
+                        <input id="playerName" class="form-control"/>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <label class="form-label">Score</label>
+                            <input id="playerScore" type="number" class="form-control" value="0"/>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Thắng</label>
+                            <input id="playerWin" type="number" class="form-control" value="0"/>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Tổng trận</label>
+                            <input id="playerTotal" type="number" class="form-control" value="0"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-primary" onclick="savePlayer()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Detail + History -->
+    <div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hồ sơ & Lịch sử</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-4">
+                            <div class="border rounded p-3 bg-light">
+                                <div class="text-muted">Người chơi</div>
+                                <div class="fs-5 fw-semibold" id="dName">-</div>
+                                <div class="mt-2 small">
+                                    Score: <b id="dScore">-</b><br/>
+                                    Thắng: <b id="dWin">-</b><br/>
+                                    Tổng trận: <b id="dTotal">-</b>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-8">
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Game</th>
+                                        <th>Kết quả</th>
+                                        <th>Kills</th>
+                                        <th>Assists</th>
+                                        <th>Điểm</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tblHistory"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      let modalPlayer, modalDetail;
+
+      function openCreate() {
+        qs('playerId').value = '';
+        qs('modalPlayerTitle').textContent = 'Thêm người chơi';
+        qs('playerName').value = '';
+        qs('playerScore').value = 0;
+        qs('playerWin').value = 0;
+        qs('playerTotal').value = 0;
+        modalPlayer.show();
+      }
+
+      function openEdit(p) {
+        qs('playerId').value = p.id;
+        qs('modalPlayerTitle').textContent = 'Sửa người chơi #' + p.id;
+        qs('playerName').value = p.name || '';
+        qs('playerScore').value = p.score ?? 0;
+        qs('playerWin').value = p.winCount ?? 0;
+        qs('playerTotal').value = p.totalMatch ?? 0;
+        modalPlayer.show();
+      }
+
+      async function savePlayer() {
+        try {
+          const id = qs('playerId').value;
+          const payload = {
+            name: qs('playerName').value.trim(),
+            score: Number(qs('playerScore').value || 0),
+            winCount: Number(qs('playerWin').value || 0),
+            totalMatch: Number(qs('playerTotal').value || 0)
+          };
+
+          if (!payload.name) return toast('Tên người chơi không được trống', 'warning');
+
+          if (id) {
+            await apiFetch('/api/players/' + id, { method: 'PUT', body: JSON.stringify(payload) });
+            toast('Đã cập nhật');
+          } else {
+            await apiFetch('/api/players', { method: 'POST', body: JSON.stringify(payload) });
+            toast('Đã thêm');
+          }
+          modalPlayer.hide();
+          await loadPlayers();
+        } catch (e) {
+          toast('Lưu lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function doLock(id) {
+        try {
+          await apiFetch('/api/players/' + id + '/lock', { method: 'PUT' });
+          toast('Đã khoá');
+          await loadPlayers();
+        } catch (e) { toast('Khoá lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function doUnlock(id) {
+        try {
+          await apiFetch('/api/players/' + id + '/unlock', { method: 'PUT' });
+          toast('Đã mở khoá');
+          await loadPlayers();
+        } catch (e) { toast('Mở khoá lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function openDetail(id) {
+        try {
+          const p = await apiFetch('/api/players/' + id);
+          qs('dName').textContent = p.name;
+          qs('dScore').textContent = p.score;
+          qs('dWin').textContent = p.winCount;
+          qs('dTotal').textContent = p.totalMatch;
+
+          const hist = await apiFetch('/api/players/' + id + '/matches');
+          qs('tblHistory').innerHTML = hist.map(m => `
+            <tr>
+              <td>${m.id}</td>
+              <td>${m.game ? m.game.name : ''}</td>
+              <td>${m.result || ''}</td>
+              <td>${m.kills ?? ''}</td>
+              <td>${m.assists ?? ''}</td>
+              <td class="fw-semibold">${m.points ?? ''}</td>
+            </tr>
+          `).join('') || `<tr><td colspan="6" class="text-muted">Chưa có trận nào</td></tr>`;
+
+          modalDetail.show();
+        } catch (e) {
+          toast('Tải hồ sơ lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function loadPlayers() {
+        try {
+          const players = await apiFetch('/api/players');
+          qs('tblPlayers').innerHTML = players.map(p => `
+            <tr>
+              <td>${p.id}</td>
+              <td class="fw-semibold clickable" onclick="openDetail(${p.id})">${p.name}</td>
+              <td>${p.score}</td>
+              <td>${p.winCount}</td>
+              <td>${p.totalMatch}</td>
+              <td>${p.active ? '<span class="badge text-bg-success">Hoạt động</span>' : '<span class="badge text-bg-secondary">Bị khoá</span>'}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary" onclick='openEdit(${JSON.stringify(p)})'>Sửa</button>
+                ${p.active
+                  ? `<button class="btn btn-sm btn-outline-warning" onclick="doLock(${p.id})">Khoá</button>`
+                  : `<button class="btn btn-sm btn-outline-success" onclick="doUnlock(${p.id})">Mở</button>`}
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          qs('tblPlayers').innerHTML = `<tr><td colspan="7" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        modalPlayer = new bootstrap.Modal(qs('modalPlayer'));
+        modalDetail = new bootstrap.Modal(qs('modalDetail'));
+        loadPlayers();
+      });
+    </script>
+</section>
+</html>

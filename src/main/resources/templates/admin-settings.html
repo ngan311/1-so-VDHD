@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Cài đặt hệ thống</h4>
+
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-5">
+            <div class="card card-kpi p-3">
+                <h5 class="mb-3">Thêm/Cập nhật cấu hình</h5>
+                <div class="mb-2">
+                    <label class="form-label">Key</label>
+                    <input id="setKey" class="form-control" placeholder="vd: MAX_ROOMS"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Value</label>
+                    <input id="setValue" class="form-control" placeholder="vd: 20"/>
+                </div>
+                <button class="btn btn-primary w-100" onclick="saveSetting()">Lưu cấu hình</button>
+                <div class="small text-muted mt-2">Endpoint này cần token role ADMIN.</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-7">
+            <div class="card card-kpi p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách cấu hình</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadSettings()">Tải lại</button>
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Key</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblSettings"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      async function loadSettings() {
+        try {
+          const rows = await apiFetch('/api/admin/settings');
+          qs('tblSettings').innerHTML = rows.map(s => `
+            <tr>
+              <td>${s.id}</td>
+              <td class="fw-semibold">${s.settingKey}</td>
+              <td class="mono">${s.settingValue}</td>
+            </tr>
+          `).join('') || `<tr><td colspan="3" class="text-muted">Chưa có cấu hình</td></tr>`;
+        } catch (e) {
+          qs('tblSettings').innerHTML = `<tr><td colspan="3" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      async function saveSetting() {
+        try {
+          const key = qs('setKey').value.trim();
+          const value = qs('setValue').value.trim();
+          if (!key) return toast('Key không được trống', 'warning');
+          await apiFetch(`/api/admin/settings?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}`, { method: 'POST' });
+          toast('Đã lưu cấu hình');
+          qs('setKey').value = '';
+          qs('setValue').value = '';
+          await loadSettings();
+        } catch (e) {
+          toast('Lưu lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</section>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Bảng xếp hạng</h4>
+
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-6">
+            <div class="card card-kpi p-3">
+                <h5 class="mb-3">Top theo Score</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên</th>
+                            <th>Score</th>
+                            <th>Thắng</th>
+                            <th>Tổng trận</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblScore"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card card-kpi p-3">
+                <h5 class="mb-3">Top theo Số trận thắng</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên</th>
+                            <th>Thắng</th>
+                            <th>Score</th>
+                            <th>Tổng trận</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblWin"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      function renderRow(p, idx, mode) {
+        if (mode === 'score') {
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td class="fw-semibold">${p.name}</td>
+              <td class="fw-semibold">${p.score}</td>
+              <td>${p.winCount}</td>
+              <td>${p.totalMatch}</td>
+            </tr>`;
+        }
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td class="fw-semibold">${p.name}</td>
+            <td class="fw-semibold">${p.winCount}</td>
+            <td>${p.score}</td>
+            <td>${p.totalMatch}</td>
+          </tr>`;
+      }
+
+      async function loadRankings() {
+        try {
+          const score = await apiFetch('/api/players/ranking-score');
+          qs('tblScore').innerHTML = score.map((p, i) => renderRow(p, i, 'score')).join('');
+        } catch (e) {
+          qs('tblScore').innerHTML = `<tr><td colspan="5" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+
+        try {
+          const win = await apiFetch('/api/players/ranking-win');
+          qs('tblWin').innerHTML = win.map((p, i) => renderRow(p, i, 'win')).join('');
+        } catch (e) {
+          qs('tblWin').innerHTML = `<tr><td colspan="5" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadRankings);
+    </script>
+</section>
+</html>

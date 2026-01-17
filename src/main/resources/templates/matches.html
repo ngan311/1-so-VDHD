@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Quản lý trận đấu</h4>
+
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-4">
+            <div class="card card-kpi p-3">
+                <h5 class="mb-3">Tạo trận mới</h5>
+                <div class="mb-2">
+                    <label class="form-label">Player</label>
+                    <select id="createPlayerId" class="form-select"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Game</label>
+                    <select id="createGameId" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Room</label>
+                    <select id="createRoomId" class="form-select">
+                        <option value="">(Không chọn)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary w-100" onclick="createMatch()">Tạo trận</button>
+            </div>
+
+            <div class="card card-kpi p-3 mt-3">
+                <h5 class="mb-3">Nộp kết quả</h5>
+                <div class="mb-2">
+                    <label class="form-label">Match ID</label>
+                    <input id="resultMatchId" type="number" class="form-control" placeholder="vd: 1"/>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Kết quả</label>
+                    <select id="resultValue" class="form-select">
+                        <option value="WIN">WIN</option>
+                        <option value="LOSE">LOSE</option>
+                        <option value="DRAW">DRAW</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Kills</label>
+                        <input id="resultKills" type="number" class="form-control" value="0"/>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Assists</label>
+                        <input id="resultAssists" type="number" class="form-control" value="0"/>
+                    </div>
+                </div>
+                <button class="btn btn-success w-100" onclick="submitResult()">Gửi kết quả</button>
+                <div class="small text-muted mt-2">Điểm sẽ được tính theo logic service hiện có.</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <div class="card card-kpi p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách trận</h5>
+                    <div class="d-flex gap-2">
+                        <select id="filterPlayerId" class="form-select form-select-sm" style="max-width:220px"></select>
+                        <select id="filterGameId" class="form-select form-select-sm" style="max-width:220px"></select>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadMatches()">Lọc</button>
+                    </div>
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Player</th>
+                            <th>Game</th>
+                            <th>Room</th>
+                            <th>Kết quả</th>
+                            <th>K/A</th>
+                            <th>Điểm</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblMatches"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      let players = [], games = [], rooms = [];
+
+      function optAll(list, idKey, textKey, extraText = '') {
+        return list.map(x => `<option value="${x[idKey]}">${x[textKey]}${extraText}</option>`).join('');
+      }
+
+      async function preload() {
+        players = await apiFetch('/api/players');
+        games = await apiFetch('/api/games');
+        rooms = await apiFetch('/api/rooms');
+
+        qs('createPlayerId').innerHTML = optAll(players, 'id', 'name');
+        qs('createGameId').innerHTML = optAll(games, 'id', 'name');
+        qs('createRoomId').innerHTML = '<option value="">(Không chọn)</option>' + rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+
+        qs('filterPlayerId').innerHTML = '<option value="">Tất cả Player</option>' + optAll(players, 'id', 'name');
+        qs('filterGameId').innerHTML = '<option value="">Tất cả Game</option>' + optAll(games, 'id', 'name');
+      }
+
+      async function createMatch() {
+        try {
+          const playerId = qs('createPlayerId').value;
+          const gameId = qs('createGameId').value;
+          const roomId = qs('createRoomId').value;
+          const qsRoom = roomId ? `&roomId=${encodeURIComponent(roomId)}` : '';
+          const m = await apiFetch(`/api/matches?playerId=${encodeURIComponent(playerId)}&gameId=${encodeURIComponent(gameId)}${qsRoom}`, { method: 'POST' });
+          toast('Đã tạo trận #' + m.id);
+          qs('resultMatchId').value = m.id;
+          await loadMatches();
+        } catch (e) {
+          toast('Tạo trận lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function submitResult() {
+        try {
+          const id = qs('resultMatchId').value;
+          if (!id) return toast('Nhập Match ID', 'warning');
+          const result = qs('resultValue').value;
+          const kills = qs('resultKills').value || 0;
+          const assists = qs('resultAssists').value || 0;
+          const m = await apiFetch(`/api/matches/${encodeURIComponent(id)}/result?result=${encodeURIComponent(result)}&kills=${encodeURIComponent(kills)}&assists=${encodeURIComponent(assists)}`, { method: 'POST' });
+          toast('Đã ghi nhận kết quả (điểm: ' + (m.points ?? '') + ')');
+          await loadMatches();
+        } catch (e) {
+          toast('Gửi kết quả lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function loadMatches() {
+        try {
+          const playerId = qs('filterPlayerId').value;
+          const gameId = qs('filterGameId').value;
+          const params = [];
+          if (playerId) params.push('playerId=' + encodeURIComponent(playerId));
+          if (gameId) params.push('gameId=' + encodeURIComponent(gameId));
+          const url = '/api/matches' + (params.length ? ('?' + params.join('&')) : '');
+
+          const list = await apiFetch(url);
+          qs('tblMatches').innerHTML = list.map(m => `
+            <tr>
+              <td class="fw-semibold">${m.id}</td>
+              <td>${m.player ? m.player.name : ''}</td>
+              <td>${m.game ? m.game.name : ''}</td>
+              <td>${m.room ? m.room.name : ''}</td>
+              <td>${m.result || ''}</td>
+              <td>${m.kills ?? ''}/${m.assists ?? ''}</td>
+              <td class="fw-semibold">${m.points ?? ''}</td>
+            </tr>
+          `).join('') || `<tr><td colspan="7" class="text-muted">Chưa có trận</td></tr>`;
+        } catch (e) {
+          qs('tblMatches').innerHTML = `<tr><td colspan="7" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          await preload();
+          await loadMatches();
+        } catch (e) {
+          toast('Cần token (ADMIN/USER) để xem/tao trận: ' + e.message, 'warning');
+        }
+      });
+    </script>
+</section>
+</html>

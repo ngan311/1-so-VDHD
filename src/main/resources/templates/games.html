@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Quản lý game</h4>
+
+        </div>
+        <button class="btn btn-primary" onclick="openCreateGame()">+ Thêm game</button>
+    </div>
+
+    <div class="card card-kpi p-3">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên game</th>
+                    <th>Thể loại</th>
+                    <th>Phiên bản</th>
+                    <th>Online</th>
+                    <th>Hiển thị</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="tblGames"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGame" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalGameTitle">Game</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="gameId"/>
+                    <div class="mb-2">
+                        <label class="form-label">Tên game</label>
+                        <input id="gameName" class="form-control"/>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Thể loại</label>
+                            <input id="gameCategory" class="form-control" placeholder="MOBA / FPS / Puzzle"/>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Phiên bản</label>
+                            <input id="gameVersion" class="form-control" placeholder="1.0"/>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch mt-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="gameOnline">
+                        <label class="form-check-label" for="gameOnline">Online</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-primary" onclick="saveGame()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      let modalGame;
+
+      function openCreateGame() {
+        qs('gameId').value = '';
+        qs('modalGameTitle').textContent = 'Thêm game';
+        qs('gameName').value = '';
+        qs('gameCategory').value = '';
+        qs('gameVersion').value = '';
+        qs('gameOnline').checked = true;
+        modalGame.show();
+      }
+
+      function openEditGame(g) {
+        qs('gameId').value = g.id;
+        qs('modalGameTitle').textContent = 'Sửa game #' + g.id;
+        qs('gameName').value = g.name || '';
+        qs('gameCategory').value = g.category || '';
+        qs('gameVersion').value = g.version || '';
+        qs('gameOnline').checked = !!g.online;
+        modalGame.show();
+      }
+
+      async function saveGame() {
+        try {
+          const id = qs('gameId').value;
+          const payload = {
+            name: qs('gameName').value.trim(),
+            category: qs('gameCategory').value.trim(),
+            version: qs('gameVersion').value.trim(),
+            online: qs('gameOnline').checked,
+            active: true
+          };
+          if (!payload.name) return toast('Tên game không được trống', 'warning');
+
+          if (id) {
+            await apiFetch('/api/games/' + id, { method: 'PUT', body: JSON.stringify(payload) });
+            toast('Đã cập nhật');
+          } else {
+            await apiFetch('/api/games', { method: 'POST', body: JSON.stringify(payload) });
+            toast('Đã thêm');
+          }
+          modalGame.hide();
+          await loadGames();
+        } catch (e) {
+          toast('Lưu lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function doHide(id) {
+        try { await apiFetch('/api/games/' + id + '/hide', { method: 'PUT' }); toast('Đã ẩn'); await loadGames(); }
+        catch (e) { toast('Ẩn lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function doUnhide(id) {
+        try { await apiFetch('/api/games/' + id + '/unhide', { method: 'PUT' }); toast('Đã hiện'); await loadGames(); }
+        catch (e) { toast('Hiện lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function doDelete(id) {
+        if (!confirm('Xoá game #' + id + '?')) return;
+        try { await apiFetch('/api/games/' + id, { method: 'DELETE' }); toast('Đã xoá'); await loadGames(); }
+        catch (e) { toast('Xoá lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function loadGames() {
+        try {
+          const games = await apiFetch('/api/games');
+          qs('tblGames').innerHTML = games.map(g => `
+            <tr>
+              <td>${g.id}</td>
+              <td class="fw-semibold">${g.name}</td>
+              <td>${g.category || ''}</td>
+              <td>${g.version || ''}</td>
+              <td>${g.online ? '<span class="badge text-bg-success">Online</span>' : '<span class="badge text-bg-secondary">Offline</span>'}</td>
+              <td>${g.active ? '<span class="badge text-bg-success">Hiện</span>' : '<span class="badge text-bg-warning">Ẩn</span>'}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary" onclick='openEditGame(${JSON.stringify(g)})'>Sửa</button>
+                ${g.active
+                  ? `<button class="btn btn-sm btn-outline-warning" onclick="doHide(${g.id})">Ẩn</button>`
+                  : `<button class="btn btn-sm btn-outline-success" onclick="doUnhide(${g.id})">Hiện</button>`}
+                <button class="btn btn-sm btn-outline-danger" onclick="doDelete(${g.id})">Xoá</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          qs('tblGames').innerHTML = `<tr><td colspan="7" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        modalGame = new bootstrap.Modal(qs('modalGame'));
+        loadGames();
+      });
+    </script>
+</section>
+</html>

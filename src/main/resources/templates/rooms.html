@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">Quản lý phòng</h4>
+
+        </div>
+        <button class="btn btn-primary" onclick="openCreateRoom()">+ Tạo phòng</button>
+    </div>
+
+    <div class="card card-kpi p-3">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên phòng</th>
+                    <th>Game</th>
+                    <th>Sức chứa</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="tblRooms"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRoom" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRoomTitle">Phòng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="roomId"/>
+                    <div class="mb-2">
+                        <label class="form-label">Tên phòng</label>
+                        <input id="roomName" class="form-control"/>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Sức chứa</label>
+                            <input id="roomCapacity" type="number" class="form-control" value="10"/>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select id="roomStatus" class="form-select">
+                                <option value="ONLINE">ONLINE</option>
+                                <option value="OFFLINE">OFFLINE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label">Game</label>
+                        <select id="roomGameId" class="form-select"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-primary" onclick="saveRoom()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      let modalRoom;
+      let cachedGames = [];
+
+      function fillGameSelect() {
+        qs('roomGameId').innerHTML = cachedGames.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+      }
+
+      async function loadGamesForRoom() {
+        cachedGames = await apiFetch('/api/games');
+        fillGameSelect();
+      }
+
+      function openCreateRoom() {
+        qs('roomId').value = '';
+        qs('modalRoomTitle').textContent = 'Tạo phòng';
+        qs('roomName').value = '';
+        qs('roomCapacity').value = 10;
+        qs('roomStatus').value = 'ONLINE';
+        if (cachedGames.length) qs('roomGameId').value = cachedGames[0].id;
+        modalRoom.show();
+      }
+
+      function openEditRoom(r) {
+        qs('roomId').value = r.id;
+        qs('modalRoomTitle').textContent = 'Sửa phòng #' + r.id;
+        qs('roomName').value = r.name || '';
+        qs('roomCapacity').value = r.capacity ?? 10;
+        qs('roomStatus').value = r.status || 'ONLINE';
+        qs('roomGameId').value = r.game ? r.game.id : '';
+        modalRoom.show();
+      }
+
+      async function saveRoom() {
+        try {
+          const id = qs('roomId').value;
+          const gameId = Number(qs('roomGameId').value);
+          const payload = {
+            name: qs('roomName').value.trim(),
+            capacity: Number(qs('roomCapacity').value || 10),
+            status: qs('roomStatus').value,
+            game: { id: gameId }
+          };
+          if (!payload.name) return toast('Tên phòng không được trống', 'warning');
+
+          if (id) {
+            await apiFetch('/api/rooms/' + id, { method: 'PUT', body: JSON.stringify(payload) });
+            toast('Đã cập nhật');
+          } else {
+            await apiFetch('/api/rooms', { method: 'POST', body: JSON.stringify(payload) });
+            toast('Đã tạo');
+          }
+          modalRoom.hide();
+          await loadRooms();
+        } catch (e) {
+          toast('Lưu lỗi: ' + e.message, 'danger');
+        }
+      }
+
+      async function doDeleteRoom(id) {
+        if (!confirm('Xoá phòng #' + id + '?')) return;
+        try { await apiFetch('/api/rooms/' + id, { method: 'DELETE' }); toast('Đã xoá'); await loadRooms(); }
+        catch (e) { toast('Xoá lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function quickStatus(id, status) {
+        try { await apiFetch('/api/rooms/' + id + '/status?status=' + encodeURIComponent(status), { method: 'PUT' }); toast('Đã đổi trạng thái'); await loadRooms(); }
+        catch (e) { toast('Đổi trạng thái lỗi: ' + e.message, 'danger'); }
+      }
+
+      async function loadRooms() {
+        try {
+          const rooms = await apiFetch('/api/rooms');
+          qs('tblRooms').innerHTML = rooms.map(r => `
+            <tr>
+              <td>${r.id}</td>
+              <td class="fw-semibold">${r.name}</td>
+              <td>${r.game ? r.game.name : ''}</td>
+              <td>${r.capacity}</td>
+              <td>${r.status === 'ONLINE' ? '<span class="badge text-bg-success">ONLINE</span>' : '<span class="badge text-bg-secondary">OFFLINE</span>'}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary" onclick='openEditRoom(${JSON.stringify(r)})'>Sửa</button>
+                <button class="btn btn-sm btn-outline-success" onclick="quickStatus(${r.id},'ONLINE')">Online</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="quickStatus(${r.id},'OFFLINE')">Offline</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="doDeleteRoom(${r.id})">Xoá</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          qs('tblRooms').innerHTML = `<tr><td colspan="6" class="text-muted">Không tải được: ${e.message}</td></tr>`;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        modalRoom = new bootstrap.Modal(qs('modalRoom'));
+        try { await loadGamesForRoom(); } catch (e) { /* ignore */ }
+        await loadRooms();
+      });
+    </script>
+</section>
+</html>

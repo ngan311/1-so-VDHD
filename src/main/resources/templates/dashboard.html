@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::section})}">
+<section>
+    <div class="dashboard-header mb-4">
+        <h4 class="mb-1">🎮 Dashboard</h4>
+        <div style="opacity: 0.9; font-size: 0.95rem;">Tổng quan hệ thống quản lý giải đấu game</div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card-kpi gradient-primary p-3 kpi-card fade-in">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Người chơi online</div>
+                        <div class="kpi-value" id="kpiActivePlayers">-</div>
+                        <div class="small" style="opacity: 0.8;">Đang hoạt động</div>
+                    </div>
+                    <div class="kpi-icon">👥</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card-kpi gradient-success p-3 kpi-card fade-in" style="animation-delay: 0.1s;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Game online</div>
+                        <div class="kpi-value" id="kpiOnlineGames">-</div>
+                        <div class="small" style="opacity: 0.8;">Đang mở</div>
+                    </div>
+                    <div class="kpi-icon">🎯</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card-kpi gradient-warning p-3 kpi-card fade-in" style="animation-delay: 0.2s;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Tổng phòng</div>
+                        <div class="kpi-value" id="kpiTotalRooms">-</div>
+                        <div class="small" style="opacity: 0.8;">Phòng chờ</div>
+                    </div>
+                    <div class="kpi-icon">🏠</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card-kpi gradient-danger p-3 kpi-card fade-in" style="animation-delay: 0.3s;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Tổng trận đấu</div>
+                        <div class="kpi-value" id="kpiTotalMatches">-</div>
+                        <div class="small" style="opacity: 0.8;">Đã hoàn thành</div>
+                    </div>
+                    <div class="kpi-icon">⚔️</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-7">
+            <div class="card-kpi p-4 fade-in">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold">🎮 Danh sách Game</h5>
+                    <a class="btn btn-sm btn-primary" href="/games">
+                        <span>Quản lý game →</span>
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên game</th>
+                            <th>Thể loại</th>
+                            <th>Phiên bản</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblGames"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <div class="card-kpi p-4 fade-in" style="animation-delay: 0.1s;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold">🏆 Top người chơi</h5>
+                    <a class="btn btn-sm btn-outline-primary" href="/rankings">Xem tất cả</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Tên</th>
+                            <th>Score</th>
+                            <th>Thắng</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tblTop"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const s = await apiFetch('/api/admin/stats');
+                qs('kpiActivePlayers').textContent = s.activePlayers ?? '-';
+                qs('kpiOnlineGames').textContent = s.onlineGames ?? '-';
+                qs('kpiTotalRooms').textContent = s.totalRooms ?? '-';
+                qs('kpiTotalMatches').textContent = s.totalMatches ?? '-';
+            } catch (e) {
+                qs('kpiActivePlayers').textContent = '—';
+                qs('kpiOnlineGames').textContent = '—';
+                qs('kpiTotalRooms').textContent = '—';
+                qs('kpiTotalMatches').textContent = '—';
+            }
+        }
+
+        async function loadGames() {
+            try {
+                const games = await apiFetch('/api/games');
+                qs('tblGames').innerHTML = games.map(g => `
+            <tr class="fade-in">
+              <td><span class="badge badge-soft">${g.id}</span></td>
+              <td class="fw-semibold">${g.name}</td>
+              <td><span class="badge badge-soft">${g.category || 'N/A'}</span></td>
+              <td class="text-muted">${g.version || 'v1.0'}</td>
+              <td>
+                ${g.online
+                    ? '<span class="badge text-bg-success">● Online</span>'
+                    : '<span class="badge text-bg-secondary">○ Offline</span>'}
+                ${g.active ? '' : ' <span class="badge text-bg-warning">Ẩn</span>'}
+              </td>
+            </tr>
+          `).join('');
+            } catch (e) {
+                qs('tblGames').innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Không tải được danh sách game</td></tr>`;
+            }
+        }
+
+        async function loadTop() {
+            try {
+                const rows = await apiFetch('/api/players/ranking-score');
+                qs('tblTop').innerHTML = rows.slice(0, 10).map((p, idx) => {
+                    let rankBadge = '<span class="rank-badge">' + (idx + 1) + '</span>';
+                    if (idx === 0) rankBadge = '<span class="rank-badge gold">🥇</span>';
+                    else if (idx === 1) rankBadge = '<span class="rank-badge silver">🥈</span>';
+                    else if (idx === 2) rankBadge = '<span class="rank-badge bronze">🥉</span>';
+
+                    return `
+            <tr class="fade-in">
+              <td>${rankBadge}</td>
+              <td class="fw-semibold">${p.name}</td>
+              <td><span class="badge text-bg-primary">${p.score}</span></td>
+              <td class="text-muted">${p.winCount}</td>
+            </tr>
+          `}).join('');
+            } catch (e) {
+                qs('tblTop').innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Cần token để xem ranking</td></tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadGames();
+            loadTop();
+        });
+    </script>
+</section>
+</html>
